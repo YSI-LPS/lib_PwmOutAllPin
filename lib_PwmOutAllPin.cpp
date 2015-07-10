@@ -8,6 +8,7 @@ PwmOutAllPin::PwmOutAllPin(PinName pin) : PwmOutPin(pin)
 {
     Pwm_period_us = 20000;
 	Pwm_Duty_Cycle = 0.0;
+	TickerPeriod.attach_us(this, &PwmOutAllPin::DigitalDown, Pwm_period_us);
 }
 
 /** Fixe le rapport cyclique au pourcentage (float) spécifié
@@ -19,11 +20,8 @@ PwmOutAllPin::PwmOutAllPin(PinName pin) : PwmOutPin(pin)
  */
 void PwmOutAllPin::write(float value)
 {
-	if(value != Pwm_Duty_Cycle)
-	{
-		Pwm_Duty_Cycle = value;
-		UsePwm();
-	}
+	Pwm_Duty_Cycle = value;
+	UsePwm();
 }
 
 /** Retourne la valeur courante du rapport cyclique de la sortie, mesurée sous la forme d'un pourcentage (float)
@@ -45,47 +43,47 @@ float PwmOutAllPin::read(void)
  */
 void PwmOutAllPin::period(float seconds)
 {
-	Pwm_period_us = seconds*1000000;
-	UsePwm();
+	period_us(seconds*1000000);
 }
 
 /** Fixe la période du PWM, spécifié en millisecondes (int), garde le même rapport cyclique.
  */
 void PwmOutAllPin::period_ms(int ms)
 {
-	Pwm_period_us = ms*1000;
-	UsePwm();
+	period_us(ms*1000);
 }
 
 /** Fixe la période du PWM, spécifié en microsecondes (int), garde le même rapport cyclique.
  */
 void PwmOutAllPin::period_us(int us)
 {
-	Pwm_period_us = us-8;
-	UsePwm();
+	if(us != Pwm_period_us)
+	{
+		Pwm_period_us = us;
+		UsePwm();
+		TickerPeriod.attach_us(this, &PwmOutAllPin::DigitalDown, Pwm_period_us);
+	}
 }
 
 /** Fixe la largeur d'impulsion du PWM, spécifié en secondes (float), garde la même période.
  */
 void PwmOutAllPin::pulsewidth(float seconds)
 {
-	Pwm_Duty_Cycle = seconds*1000000/Pwm_period_us;
-	UsePwm();
+	pulsewidth_us(seconds*1000000);
 }
 
 /** Fixe la largeur d'impulsion du PWM, spécifié en millisecondes (int), garde la même période.
  */
 void PwmOutAllPin::pulsewidth_ms(int ms)
 {
-	Pwm_Duty_Cycle = ms*1000/Pwm_period_us;
-	UsePwm();
+	pulsewidth_us(ms*1000);
 }
 
 /** Fixe la largeur d'impulsion du PWM, spécifié en microsecondes (int), garde la même période.
  */
 void PwmOutAllPin::pulsewidth_us(int us)
 {
-	Pwm_Duty_Cycle = us/Pwm_period_us;
+	Pwm_Duty_Cycle = (float)us/Pwm_period_us;
 	UsePwm();
 }
 
@@ -114,32 +112,34 @@ PwmOutAllPin::operator float()
 
 void PwmOutAllPin::DigitalUp(void)
 {
-	SwitchPin.attach_us(this, &PwmOutAllPin::DigitalDown, (Pwm_period_us*Pwm_Duty_Cycle));
 	PwmOutPin = 1;
 }
 
 void PwmOutAllPin::DigitalDown(void)
 {
-	SwitchPin.attach_us(this, &PwmOutAllPin::DigitalUp, (Pwm_period_us*(1.0-Pwm_Duty_Cycle)));
-	PwmOutPin = 0;
+	if((Pwm_Duty_Cycle > 0.0) && (Pwm_Duty_Cycle < 1.0))
+	{
+		PwmOutPin = 0;
+		SwitchPin.attach_us(this, &PwmOutAllPin::DigitalUp, TimeDown);
+	}
 }
 
 void PwmOutAllPin::UsePwm(void)
 {
 	if((Pwm_Duty_Cycle > 0.0) && (Pwm_Duty_Cycle < 1.0))
 	{
-		DigitalUp();
+		TimeDown = Pwm_period_us*(1.0-Pwm_Duty_Cycle);
 	}
 	else if(Pwm_Duty_Cycle >= 1.0)
 	{
-		Pwm_Duty_Cycle = 1.0;
 		SwitchPin.detach();
+		Pwm_Duty_Cycle = 1.0;
 		PwmOutPin = 1;
 	}
 	else
 	{
-		Pwm_Duty_Cycle = 0.0;
 		SwitchPin.detach();
+		Pwm_Duty_Cycle = 0.0;
 		PwmOutPin = 0;
 	}
 }
