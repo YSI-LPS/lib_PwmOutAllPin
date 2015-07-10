@@ -25,8 +25,8 @@ class PwmOutAllPin : public Timeout
 	Timeout SwitchPin;
 	Ticker TickerPeriod;
 	
-	int Pwm_period_us;
 	float Pwm_Duty_Cycle;
+	int Pwm_period_us;
 	int TimeDown;
 
 	void DigitalUp(void);
