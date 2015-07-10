@@ -23,10 +23,12 @@ class PwmOutAllPin : public Timeout
 	protected:
 	DigitalOut PwmOutPin;
 	Timeout SwitchPin;
+	Ticker TickerPeriod;
 	
-	float Pwm_period_us;
+	int Pwm_period_us;
 	float Pwm_Duty_Cycle;
-	
+	int TimeDown;
+
 	void DigitalUp(void);
 	void DigitalDown(void);
 	void UsePwm(void);
