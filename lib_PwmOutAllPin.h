@@ -1,3 +1,34 @@
+/** Lib PwmOutAllPin
+*
+* Copyright (c) 2014, cstyles (http://mbed.org)
+*
+* Exemple:
+* @code
+* #include "mbed.h"
+* #include "lib_PwmOutAllPin.h"
+* 
+* PwmOutAllPin pin1(p20);
+* PwmOutAllPin pin2(p12);
+* 
+* int main()
+* {
+*     pin2.period(0.0002);
+*     pin2 = 0.25;
+*     pin1 = 0.5;
+*     pin1.period_us(20);
+* 
+*     while(1)
+*     {
+*     	wait(0.25);
+*     }
+* }
+* @endcode
+* @file          lib_PwmOutAllPin.h 
+* @purpose       library for PwmOut on all pins
+* @date          2015
+* @author        Yannic Simon
+*/
+
 #ifndef DEF_lib_PwmOutAllPin_H
 #define DEF_lib_PwmOutAllPin_H
 
