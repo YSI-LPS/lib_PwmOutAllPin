@@ -1,4 +1,4 @@
-/** Lib PwmOutAllPin
+/** Lib PwmOutAllPin using TimeOut
 *
 * Copyright (c) 2014, cstyles (http://mbed.org)
 *
@@ -32,7 +32,7 @@
 #include "lib_PwmOutAllPin.h"
 
 /** Crée un PwmOutAllPin connecté à la pin spécifiée
- *
+ *	@note init period 20ms and duty cycle 0%
  *  @param pin Pin à connecter
  */
 PwmOutAllPin::PwmOutAllPin(PinName pin) : PwmOutPin(pin)
